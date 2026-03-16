@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
-import maplibregl, { ExpressionSpecification, GeoJSONSource } from 'maplibre-gl'
+import { useEffect, useRef, useState } from 'react'
+import maplibregl, { GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import styles from './Map.module.css'
 import Popup from './Popup'
@@ -20,7 +20,7 @@ const Map = ({
   withName?: boolean
   noFigures?: boolean
 }) => {
-  const map = useRef<maplibregl.Map>()
+  const map = useRef<maplibregl.Map>(null)
   const mapContainer = useRef<HTMLDivElement>(null)
   const [selectedDeclikers, setSelectedDeclikers] = useState<Decliker[] | null>(null)
 
@@ -145,16 +145,13 @@ const Map = ({
             if (map.current && e.features) {
               let clusterId = e.features[0].properties.cluster_id
               let pointCount = e.features[0].properties.point_count
-              ;(map.current.getSource('declikers') as GeoJSONSource).getClusterLeaves(
-                clusterId,
-                pointCount,
-                0,
-                (errors, features) => {
+              ;(map.current.getSource('declikers') as GeoJSONSource)
+                .getClusterLeaves(clusterId, pointCount, 0)
+                .then((features) => {
                   if (features) {
                     setSelectedDeclikers(features.map((feature) => feature.properties as Decliker) || null)
                   }
-                }
-              )
+                })
             }
           })
         }
